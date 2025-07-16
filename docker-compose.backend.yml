@@ -15,12 +15,14 @@ services:
       - JWT_SECRET_KEY=your-secret-key-here
       - NOTIFICATION_SERVICE_URL=http://notification-service:5002
       - CRM_SERVICE_URL=http://crm-service:5001
+      - EMAIL_SERVICE_URL=http://email-service:5003
     volumes:
       - ./backend:/app
       - backend_data:/app/data
     depends_on:
       - notification-service
       - crm-service
+      - email-service
     networks:
       - booking-network
 
@@ -58,6 +60,28 @@ services:
     volumes:
       - ./notification_service:/app
       - notification_data:/app/data
+    networks:
+      - booking-network
+
+  # Email Service
+  email-service:
+    build:
+      context: ./email_service
+      dockerfile: Dockerfile
+    ports:
+      - "5003:5003"
+    environment:
+      - FLASK_ENV=development
+      - FLASK_DEBUG=1
+      - SMTP_SERVER=${SMTP_SERVER:-smtp.gmail.com}
+      - SMTP_PORT=${SMTP_PORT:-587}
+      - EMAIL_ADDRESS=${EMAIL_ADDRESS}
+      - EMAIL_PASSWORD=${EMAIL_PASSWORD}
+      - EMAIL_FROM_NAME=${EMAIL_FROM_NAME:-Booking System}
+    volumes:
+      - ./email_service:/app
+    env_file:
+      - .env
     networks:
       - booking-network
 

@@ -24,6 +24,9 @@ CORS(app)
 CRM_SERVICE_URL = os.getenv('CRM_SERVICE_URL', 'http://localhost:5001')
 CRM_BEARER_TOKEN = os.getenv('CRM_BEARER_TOKEN', 'your-static-bearer-token-here')
 
+# Email Service Configuration
+EMAIL_SERVICE_URL = os.getenv('EMAIL_SERVICE_URL', 'http://localhost:5003')
+
 # Database Models
 class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -91,6 +94,26 @@ def notify_facilitator_websocket(booking_data):
         return success
     except Exception as e:
         print(f"WebSocket notification failed: {e}")
+        return False
+
+def send_booking_emails(booking_data):
+    """Send booking confirmation emails to user and facilitator"""
+    try:
+        response = requests.post(
+            f"{EMAIL_SERVICE_URL}/send-booking-emails",
+            json=booking_data,
+            headers={'Content-Type': 'application/json'},
+            timeout=30
+        )
+        
+        if response.status_code == 200:
+            print("Booking emails sent successfully")
+            return True
+        else:
+            print(f"Failed to send booking emails: {response.status_code} - {response.text}")
+            return False
+    except Exception as e:
+        print(f"Email service error: {e}")
         return False
 
 # Authentication Routes
@@ -354,6 +377,31 @@ def create_booking():
     }
 
     notify_facilitator_websocket(crm_data)
+    
+    # Send booking confirmation emails
+    email_data = {
+        'booking_id': booking.id,
+        'user': {
+            'id': current_user.id,
+            'email': current_user.email,
+            'name': current_user.name
+        },
+        'session': {
+            'id': session.id,
+            'title': session.title,
+            'session_type': session.session_type,
+            'start_time': session.start_time.isoformat(),
+            'end_time': session.end_time.isoformat(),
+            'price': session.price
+        },
+        'facilitator': {
+            'id': session.facilitator.id,
+            'email': session.facilitator.user.email,
+            'name': session.facilitator.user.name
+        }
+    }
+    
+    send_booking_emails(email_data)
     
     return jsonify({'message': 'Booking created successfully', 'booking_id': booking.id}), 201
 

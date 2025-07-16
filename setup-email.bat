@@ -1,0 +1,51 @@
+@echo off
+echo 📧 Email Service Setup
+echo =====================
+echo.
+echo To use the email service, you need to configure SMTP settings.
+echo.
+echo For Gmail:
+echo 1. Enable 2-factor authentication on your Google account
+echo 2. Go to Google Account settings ^> Security ^> App passwords
+echo 3. Generate a new app password for 'Mail'
+echo 4. Use this app password (not your regular password)
+echo.
+echo For other email providers:
+echo - Outlook: smtp.office365.com:587
+echo - Yahoo: smtp.mail.yahoo.com:587
+echo - Custom SMTP: Check your provider's documentation
+echo.
+
+rem Check if .env file exists
+if not exist .env (
+    echo Creating .env file...
+    copy email_service\.env.example .env
+    echo ✅ .env file created
+) else (
+    echo ✅ .env file already exists
+)
+
+echo.
+echo 📝 Please edit the .env file with your email configuration:
+echo    - EMAIL_ADDRESS: Your email address
+echo    - EMAIL_PASSWORD: Your app password (for Gmail) or regular password
+echo    - SMTP_SERVER: SMTP server (default: smtp.gmail.com)
+echo    - SMTP_PORT: SMTP port (default: 587)
+echo    - EMAIL_FROM_NAME: Display name for emails
+echo.
+echo ⚠️  Important: Never commit the .env file to version control!
+echo    It contains sensitive information.
+echo.
+echo 🧪 To test the email service after configuration:
+echo    1. Start the services: docker-compose -f docker-compose.backend.yml up -d
+echo    2. Check email service health: curl http://localhost:5003/health
+echo    3. Create a test booking to trigger email sending
+echo.
+echo 📚 Email service endpoints:
+echo    - POST /send-booking-confirmation - Send user confirmation
+echo    - POST /send-facilitator-notification - Send facilitator notification
+echo    - POST /send-booking-emails - Send both emails
+echo    - GET /health - Service health check
+echo.
+echo Setup complete! 🎉
+pause
