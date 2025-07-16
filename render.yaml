@@ -1,0 +1,123 @@
+services:
+  # PostgreSQL Database
+  - type: pserv
+    name: booking-system-db
+    plan: free
+    region: oregon
+    databases:
+      - name: booking_system
+        user: postgres
+
+  # Backend Service
+  - type: web
+    name: booking-system-backend
+    plan: free
+    region: oregon
+    runtime: docker
+    dockerfilePath: ./backend/Dockerfile
+    dockerContext: ./backend
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: booking-system-db
+          property: connectionString
+      - key: JWT_SECRET_KEY
+        generateValue: true
+      - key: CRM_SERVICE_URL
+        value: https://booking-system-crm.onrender.com
+      - key: CRM_BEARER_TOKEN
+        generateValue: true
+      - key: NOTIFICATION_SERVICE_URL
+        value: https://booking-system-notification.onrender.com
+      - key: BACKEND_SERVICE_TOKEN
+        generateValue: true
+      - key: EMAIL_SERVICE_URL
+        value: https://booking-system-email.onrender.com
+      - key: FLASK_ENV
+        value: production
+      - key: PORT
+        value: 5000
+
+  # CRM Service
+  - type: web
+    name: booking-system-crm
+    plan: free
+    region: oregon
+    runtime: docker
+    dockerfilePath: ./crm_service/Dockerfile
+    dockerContext: ./crm_service
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: booking-system-db
+          property: connectionString
+      - key: CRM_BEARER_TOKEN
+        sync: false
+      - key: FLASK_ENV
+        value: production
+      - key: PORT
+        value: 5001
+
+  # Notification Service
+  - type: web
+    name: booking-system-notification
+    plan: free
+    region: oregon
+    runtime: docker
+    dockerfilePath: ./notification_service/Dockerfile
+    dockerContext: ./notification_service
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: booking-system-db
+          property: connectionString
+      - key: SECRET_KEY
+        generateValue: true
+      - key: BACKEND_SERVICE_TOKEN
+        sync: false
+      - key: FLASK_ENV
+        value: production
+      - key: PORT
+        value: 5002
+
+  # Email Service
+  - type: web
+    name: booking-system-email
+    plan: free
+    region: oregon
+    runtime: docker
+    dockerfilePath: ./email_service/Dockerfile
+    dockerContext: ./email_service
+    envVars:
+      - key: SMTP_SERVER
+        value: smtp.gmail.com
+      - key: SMTP_PORT
+        value: 587
+      - key: SMTP_USERNAME
+        value: # Add your email
+      - key: SMTP_PASSWORD
+        value: # Add your app password
+      - key: FROM_EMAIL
+        value: # Add your email
+      - key: FROM_NAME
+        value: Booking System
+      - key: FLASK_ENV
+        value: production
+      - key: PORT
+        value: 5003
+
+  # Frontend Service
+  - type: web
+    name: booking-system-frontend
+    plan: free
+    region: oregon
+    runtime: docker
+    dockerfilePath: ./frontend/Dockerfile
+    dockerContext: ./frontend
+    envVars:
+      - key: REACT_APP_API_URL
+        value: https://booking-system-backend.onrender.com
+      - key: REACT_APP_NOTIFICATION_URL
+        value: https://booking-system-notification.onrender.com
+      - key: REACT_APP_GOOGLE_CLIENT_ID
+        value: # Add your Google Client ID

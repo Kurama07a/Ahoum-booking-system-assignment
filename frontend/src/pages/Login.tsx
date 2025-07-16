@@ -5,7 +5,8 @@ import { useState } from "react"
 import { useNavigate, Link } from "react-router-dom"
 import { useAuth } from "../contexts/AuthContext"
 import { toast } from "react-hot-toast"
-import { Eye, EyeOff } from "lucide-react"
+import { Eye, EyeOff, AlertCircle } from "lucide-react"
+import GoogleOAuthButton from "../components/GoogleOAuthButton"
 
 const Login: React.FC = () => {
   const [email, setEmail] = useState("")
@@ -76,6 +77,40 @@ const Login: React.FC = () => {
           {loading ? "Logging in..." : "Login"}
         </button>
       </form>
+
+      <div className="mt-6">
+        <div className="relative">
+          <div className="absolute inset-0 flex items-center">
+            <div className="w-full border-t border-gray-300" />
+          </div>
+          <div className="relative flex justify-center text-sm">
+            <span className="px-2 bg-white text-gray-500">Or continue with</span>
+          </div>
+        </div>
+
+        <div className="mt-6">
+          <GoogleOAuthButton 
+            onSuccess={() => {
+              // Handle successful Google OAuth
+              toast.success("Google sign-in successful!")
+              navigate("/dashboard")
+            }}
+            onError={() => {
+              toast.error("Google sign-in failed. Please try again.")
+            }}
+          />
+        </div>
+
+        <div className="mt-4 p-3 bg-amber-50 border border-amber-200 rounded-lg">
+          <div className="flex items-center">
+            <AlertCircle className="h-5 w-5 text-amber-600 mr-2" />
+            <p className="text-sm text-amber-800">
+              <strong>Note:</strong> Only customers can sign up/sign in with Google. 
+              Facilitators must use email authentication.
+            </p>
+          </div>
+        </div>
+      </div>
 
       <div className="mt-6 text-center">
         <p className="text-gray-600">
