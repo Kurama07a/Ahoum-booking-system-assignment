@@ -68,6 +68,17 @@ const FacilitatorDashboard: React.FC = () => {
   const [recentBookings, setRecentBookings] = useState<RecentBooking[]>([])
   const [loading, setLoading] = useState(true)
   const [activeTab, setActiveTab] = useState<'overview' | 'sessions' | 'bookings'>('overview')
+  const [editingSession, setEditingSession] = useState<Session | null>(null)
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false)
+  const [editFormData, setEditFormData] = useState({
+    title: '',
+    description: '',
+    session_type: '',
+    start_time: '',
+    end_time: '',
+    capacity: 1,
+    price: 0
+  })
 
   useEffect(() => {
     fetchDashboardData()
@@ -113,6 +124,42 @@ const FacilitatorDashboard: React.FC = () => {
         alert('Failed to cancel session. Please try again.')
       }
     }
+  }
+
+  const handleEditSession = (session: Session) => {
+    setEditingSession(session)
+    setEditFormData({
+      title: session.title,
+      description: session.description,
+      session_type: session.session_type,
+      start_time: new Date(session.start_time).toISOString().slice(0, 16),
+      end_time: new Date(session.end_time).toISOString().slice(0, 16),
+      capacity: session.capacity,
+      price: session.price
+    })
+    setIsEditModalOpen(true)
+  }
+
+  const handleUpdateSession = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!editingSession) return
+
+    try {
+      await axios.put(`http://localhost:5000/api/sessions/${editingSession.id}`, editFormData)
+      setIsEditModalOpen(false)
+      setEditingSession(null)
+      fetchSessions() // Refresh the sessions list
+      fetchDashboardData() // Refresh metrics
+      alert('Session updated successfully!')
+    } catch (error) {
+      console.error('Failed to update session:', error)
+      alert('Failed to update session. Please try again.')
+    }
+  }
+
+  const handleCloseEditModal = () => {
+    setIsEditModalOpen(false)
+    setEditingSession(null)
   }
 
   const formatDateTime = (dateTime: string) => {
@@ -397,12 +444,12 @@ const FacilitatorDashboard: React.FC = () => {
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                         <div className="flex space-x-2">
-                          <Link 
-                            to={`/sessions/${session.id}/edit`}
+                          <button 
+                            onClick={() => handleEditSession(session)}
                             className="text-blue-600 hover:text-blue-900"
                           >
                             <Edit3 size={16} />
-                          </Link>
+                          </button>
                           <button 
                             onClick={() => handleDeleteSession(session.id)}
                             className="text-red-600 hover:text-red-900"
@@ -461,6 +508,115 @@ const FacilitatorDashboard: React.FC = () => {
               ))}
             </div>
           )}
+        </div>
+      )}
+
+      {/* Edit Session Modal */}
+      {isEditModalOpen && (
+        <div className="fixed inset-0 flex items-center justify-center z-50">
+          <div className="bg-black bg-opacity-50 absolute inset-0" onClick={handleCloseEditModal}></div>
+          <div className="bg-white rounded-lg shadow-md p-6 max-w-lg w-full z-10">
+            <h2 className="text-xl font-semibold mb-4">Edit Session</h2>
+            <form onSubmit={handleUpdateSession}>
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">Title</label>
+                  <input
+                    type="text"
+                    value={editFormData.title}
+                    onChange={(e) => setEditFormData({ ...editFormData, title: e.target.value })}
+                    className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm focus:ring focus:ring-blue-500 focus:border-blue-500"
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">Description</label>
+                  <textarea
+                    value={editFormData.description}
+                    onChange={(e) => setEditFormData({ ...editFormData, description: e.target.value })}
+                    className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm focus:ring focus:ring-blue-500 focus:border-blue-500"
+                    rows={3}
+                    required
+                  ></textarea>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">Session Type</label>
+                  <select
+                    value={editFormData.session_type}
+                    onChange={(e) => setEditFormData({ ...editFormData, session_type: e.target.value })}
+                    className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm focus:ring focus:ring-blue-500 focus:border-blue-500"
+                    required
+                  >
+                    <option value="">Select Session Type</option>
+                    <option value="session">Session</option>
+                    <option value="retreat">Retreat</option>
+                  </select>
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700">Start Time</label>
+                    <input
+                      type="datetime-local"
+                      value={editFormData.start_time}
+                      onChange={(e) => setEditFormData({ ...editFormData, start_time: e.target.value })}
+                      className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm focus:ring focus:ring-blue-500 focus:border-blue-500"
+                      required
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700">End Time</label>
+                    <input
+                      type="datetime-local"
+                      value={editFormData.end_time}
+                      onChange={(e) => setEditFormData({ ...editFormData, end_time: e.target.value })}
+                      className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm focus:ring focus:ring-blue-500 focus:border-blue-500"
+                      required
+                    />
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700">Capacity</label>
+                    <input
+                      type="number"
+                      value={editFormData.capacity}
+                      onChange={(e) => setEditFormData({ ...editFormData, capacity: Number(e.target.value) })}
+                      className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm focus:ring focus:ring-blue-500 focus:border-blue-500"
+                      min={1}
+                      required
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700">Price</label>
+                    <input
+                      type="number"
+                      value={editFormData.price}
+                      onChange={(e) => setEditFormData({ ...editFormData, price: Number(e.target.value) })}
+                      className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm focus:ring focus:ring-blue-500 focus:border-blue-500"
+                      min={0}
+                      step={0.01}
+                      required
+                    />
+                  </div>
+                </div>
+                <div className="flex justify-end space-x-2">
+                  <button
+                    type="button"
+                    onClick={handleCloseEditModal}
+                    className="px-4 py-2 bg-gray-200 rounded-md hover:bg-gray-300"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+                  >
+                    Update Session
+                  </button>
+                </div>
+              </div>
+            </form>
+          </div>
         </div>
       )}
     </div>
