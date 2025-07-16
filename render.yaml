@@ -3,13 +3,13 @@ services:
   - type: pserv
     name: booking-system-db
     plan: free
-    region: oregon
+    databaseName: booking_system
+    databaseUser: postgres
 
   # Backend Service
   - type: web
     name: booking-system-backend
     plan: free
-    region: oregon
     runtime: docker
     dockerfilePath: ./backend/Dockerfile
     dockerContext: ./backend
@@ -32,14 +32,11 @@ services:
         value: https://booking-system-email.onrender.com
       - key: FLASK_ENV
         value: production
-      - key: PORT
-        value: 5000
 
   # CRM Service
   - type: web
     name: booking-system-crm
     plan: free
-    region: oregon
     runtime: docker
     dockerfilePath: ./crm_service/Dockerfile
     dockerContext: ./crm_service
@@ -52,14 +49,11 @@ services:
         generateValue: true
       - key: FLASK_ENV
         value: production
-      - key: PORT
-        value: 5001
 
   # Notification Service
   - type: web
     name: booking-system-notification
     plan: free
-    region: oregon
     runtime: docker
     dockerfilePath: ./notification_service/Dockerfile
     dockerContext: ./notification_service
@@ -74,14 +68,11 @@ services:
         generateValue: true
       - key: FLASK_ENV
         value: production
-      - key: PORT
-        value: 5002
 
   # Email Service
   - type: web
     name: booking-system-email
     plan: free
-    region: oregon
     runtime: docker
     dockerfilePath: ./email_service/Dockerfile
     dockerContext: ./email_service
@@ -100,14 +91,11 @@ services:
         value: Booking System
       - key: FLASK_ENV
         value: production
-      - key: PORT
-        value: 5003
 
   # Frontend Service
   - type: web
     name: booking-system-frontend
     plan: free
-    region: oregon
     runtime: docker
     dockerfilePath: ./frontend/Dockerfile
     dockerContext: ./frontend
