@@ -5,8 +5,8 @@ WORKDIR /app
 # Copy package files
 COPY frontend/package*.json ./
 
-# Install dependencies
-RUN npm install --omit=dev
+# Install dependencies (including dev dependencies for build)
+RUN npm install
 
 # Copy source code
 COPY frontend/ .
@@ -20,6 +20,8 @@ ARG REACT_APP_GOOGLE_CLIENT_ID
 ENV REACT_APP_API_URL=${REACT_APP_API_URL}
 ENV REACT_APP_NOTIFICATION_URL=${REACT_APP_NOTIFICATION_URL}
 ENV REACT_APP_GOOGLE_CLIENT_ID=${REACT_APP_GOOGLE_CLIENT_ID}
+ENV GENERATE_SOURCEMAP=false
+ENV TSC_COMPILE_ON_ERROR=true
 
 # Build the application
 RUN npm run build
