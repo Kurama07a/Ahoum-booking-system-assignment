@@ -1,0 +1,86 @@
+version: '3.8'
+
+services:
+  # Backend Service
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    environment:
+      - DATABASE_URL=sqlite:///booking_system.db
+      - JWT_SECRET_KEY=dev-jwt-secret-key
+      - CRM_SERVICE_URL=http://crm:5001
+      - CRM_BEARER_TOKEN=dev-static-bearer-token
+      - NOTIFICATION_SERVICE_URL=http://notification:5002
+      - BACKEND_SERVICE_TOKEN=dev-backend-service-token
+      - FLASK_ENV=development
+    ports:
+      - "5000:5000"
+    depends_on:
+      - notification
+    networks:
+      - booking-network
+    volumes:
+      - ./backend:/app
+    restart: unless-stopped
+
+  # CRM Service
+  crm:
+    build:
+      context: ./crm_service
+      dockerfile: Dockerfile
+    environment:
+      - DATABASE_URL=sqlite:///crm.db
+      - CRM_BEARER_TOKEN=dev-static-bearer-token
+      - FLASK_ENV=development
+    ports:
+      - "5001:5001"
+    networks:
+      - booking-network
+    volumes:
+      - ./crm_service:/app
+    restart: unless-stopped
+
+  # Notification Service
+  notification:
+    build:
+      context: ./notification_service
+      dockerfile: Dockerfile
+    environment:
+      - DATABASE_URL=sqlite:///notifications.db
+      - SECRET_KEY=dev-secret-key
+      - BACKEND_SERVICE_TOKEN=dev-backend-service-token
+      - FLASK_ENV=development
+    ports:
+      - "5002:5002"
+    networks:
+      - booking-network
+    volumes:
+      - ./notification_service:/app
+    restart: unless-stopped
+
+  # Frontend Service
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile.dev
+      args:
+        - REACT_APP_API_URL=http://localhost:5000
+        - REACT_APP_NOTIFICATION_URL=http://localhost:5002
+    environment:
+      - REACT_APP_API_URL=http://localhost:5000
+      - REACT_APP_NOTIFICATION_URL=http://localhost:5002
+    ports:
+      - "3000:3000"
+    depends_on:
+      - backend
+    networks:
+      - booking-network
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    restart: unless-stopped
+
+networks:
+  booking-network:
+    driver: bridge
