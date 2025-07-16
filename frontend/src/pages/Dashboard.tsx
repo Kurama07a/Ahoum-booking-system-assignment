@@ -5,6 +5,7 @@ import { useState, useEffect } from "react"
 import { useAuth } from "../contexts/AuthContext"
 import { Link } from "react-router-dom"
 import axios from "axios"
+import { buildApiUrl } from "../config/api"
 import { Calendar, Users, Clock, TrendingUp } from "lucide-react"
 
 interface DashboardStats {
@@ -31,7 +32,7 @@ const Dashboard: React.FC = () => {
 
   const fetchDashboardData = async () => {
     try {
-      const response = await axios.get("http://localhost:5000/api/bookings/my")
+      const response = await axios.get(buildApiUrl("/api/bookings/my"))
       const bookings = response.data
 
       // Calculate stats

@@ -4,6 +4,7 @@ import type React from "react"
 import { useState } from "react"
 import { useNavigate } from "react-router-dom"
 import axios from "axios"
+import { buildApiUrl } from "../config/api"
 import { ArrowLeft, Save } from "lucide-react"
 
 const CreateSession: React.FC = () => {
@@ -32,7 +33,7 @@ const CreateSession: React.FC = () => {
     setLoading(true)
 
     try {
-      await axios.post("http://localhost:5000/api/sessions", formData)
+      await axios.post(buildApiUrl("/api/sessions"), formData)
       navigate("/facilitator")
     } catch (error) {
       console.error("Failed to create session:", error)

@@ -5,6 +5,7 @@ import { useState, useEffect } from "react"
 import { useAuth } from "../contexts/AuthContext"
 import { Link } from "react-router-dom"
 import axios from "axios"
+import { buildApiUrl } from "../config/api"
 import { 
   Calendar, 
   Users, 
@@ -94,7 +95,7 @@ const FacilitatorDashboard: React.FC = () => {
 
   const fetchDashboardData = async () => {
     try {
-      const response = await axios.get("http://localhost:5000/api/facilitator/dashboard")
+      const response = await axios.get(buildApiUrl("/api/facilitator/dashboard"))
       setMetrics(response.data.metrics)
       setRecentBookings(response.data.recent_bookings)
     } catch (error) {
@@ -106,7 +107,7 @@ const FacilitatorDashboard: React.FC = () => {
 
   const fetchSessions = async () => {
     try {
-      const response = await axios.get("http://localhost:5000/api/facilitator/sessions")
+      const response = await axios.get(buildApiUrl("/api/facilitator/sessions"))
       setSessions(response.data)
     } catch (error) {
       console.error("Failed to fetch sessions:", error)
@@ -116,7 +117,7 @@ const FacilitatorDashboard: React.FC = () => {
   const handleDeleteSession = async (sessionId: number) => {
     if (window.confirm('Are you sure you want to cancel this session? This action cannot be undone.')) {
       try {
-        await axios.delete(`http://localhost:5000/api/facilitator/sessions/${sessionId}`)
+        await axios.delete(buildApiUrl(`/api/facilitator/sessions/${sessionId}`))
         fetchSessions() // Refresh the sessions list
         fetchDashboardData() // Refresh metrics
       } catch (error) {
@@ -145,7 +146,7 @@ const FacilitatorDashboard: React.FC = () => {
     if (!editingSession) return
 
     try {
-      await axios.put(`http://localhost:5000/api/sessions/${editingSession.id}`, editFormData)
+      await axios.put(buildApiUrl(`/api/sessions/${editingSession.id}`), editFormData)
       setIsEditModalOpen(false)
       setEditingSession(null)
       fetchSessions() // Refresh the sessions list
