@@ -13,6 +13,12 @@ from websocket_client import initialize_notification_client, send_booking_notifi
 
 app = Flask(__name__)
 app.config['JWT_SECRET_KEY'] = os.getenv('JWT_SECRET_KEY', 'your-secret-key-change-in-production')
+
+# JWT Token Configuration - Set token expiration time
+# Options: hours=1 (1 hour), hours=24 (1 day), days=7 (1 week), days=30 (1 month)
+JWT_EXPIRES_HOURS = int(os.getenv('JWT_EXPIRES_HOURS', '24'))  # Default: 24 hours
+app.config['JWT_ACCESS_TOKEN_EXPIRES'] = timedelta(hours=JWT_EXPIRES_HOURS)
+
 app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DATABASE_URL', 'sqlite:///booking_system.db')
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
