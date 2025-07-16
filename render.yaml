@@ -4,9 +4,6 @@ services:
     name: booking-system-db
     plan: free
     region: oregon
-    databases:
-      - name: booking_system
-        user: postgres
 
   # Backend Service
   - type: web
@@ -52,7 +49,7 @@ services:
           name: booking-system-db
           property: connectionString
       - key: CRM_BEARER_TOKEN
-        sync: false
+        generateValue: true
       - key: FLASK_ENV
         value: production
       - key: PORT
@@ -74,7 +71,7 @@ services:
       - key: SECRET_KEY
         generateValue: true
       - key: BACKEND_SERVICE_TOKEN
-        sync: false
+        generateValue: true
       - key: FLASK_ENV
         value: production
       - key: PORT
@@ -94,11 +91,11 @@ services:
       - key: SMTP_PORT
         value: 587
       - key: SMTP_USERNAME
-        value: # Add your email
+        value: prakhar200803@gmail.co,
       - key: SMTP_PASSWORD
-        value: # Add your app password
+        value: ijsf bimy hvbf mjzn
       - key: FROM_EMAIL
-        value: # Add your email
+        value: Prakhar
       - key: FROM_NAME
         value: Booking System
       - key: FLASK_ENV
@@ -120,4 +117,4 @@ services:
       - key: REACT_APP_NOTIFICATION_URL
         value: https://booking-system-notification.onrender.com
       - key: REACT_APP_GOOGLE_CLIENT_ID
-        value: # Add your Google Client ID
+        value: 267571763779-qpq166hv4fdhe2d1nhmrs3dsbk8s6a3e.apps.googleusercontent.com
